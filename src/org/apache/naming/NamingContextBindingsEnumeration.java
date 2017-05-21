@@ -64,11 +64,11 @@
 
 package org.apache.naming;
 
-import java.util.Vector;
-import java.util.Enumeration;
-import javax.naming.NamingException;
-import javax.naming.NamingEnumeration;
 import javax.naming.Binding;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
  * Naming enumeration implementation.
@@ -85,12 +85,12 @@ public class NamingContextBindingsEnumeration
 
 
     public NamingContextBindingsEnumeration(Vector entries) {
-        enum = entries.elements();
+        enums = entries.elements();
     }
 
 
-    public NamingContextBindingsEnumeration(Enumeration enum) {
-        this.enum = enum;
+    public NamingContextBindingsEnumeration(Enumeration enums) {
+        this.enums = enums;
     }
 
 
@@ -100,7 +100,7 @@ public class NamingContextBindingsEnumeration
     /**
      * Underlying enumeration.
      */
-    protected Enumeration enum;
+    protected Enumeration enums;
 
 
     // --------------------------------------------------------- Public Methods
@@ -120,7 +120,7 @@ public class NamingContextBindingsEnumeration
      */
     public boolean hasMore()
         throws NamingException {
-        return enum.hasMoreElements();
+        return enums.hasMoreElements();
     }
 
 
@@ -133,12 +133,12 @@ public class NamingContextBindingsEnumeration
 
 
     public boolean hasMoreElements() {
-        return enum.hasMoreElements();
+        return enums.hasMoreElements();
     }
 
 
     public Object nextElement() {
-        NamingEntry entry = (NamingEntry) enum.nextElement();
+        NamingEntry entry = (NamingEntry) enums.nextElement();
         return new Binding(entry.name, entry.value.getClass().getName(), 
                            entry.value, true);
     }

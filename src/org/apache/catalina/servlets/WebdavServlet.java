@@ -65,36 +65,31 @@
 package org.apache.catalina.servlets;
 
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.util.Stack;
-import java.util.Locale;
-import java.util.Hashtable;
-import java.util.TimeZone;
-import java.text.SimpleDateFormat;
+import org.apache.catalina.util.DOMWriter;
+import org.apache.catalina.util.RequestUtil;
+import org.apache.catalina.util.XMLWriter;
+import org.apache.naming.resources.Resource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.naming.NamingException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NameClassPair;
-import javax.naming.directory.DirContext;
-import org.apache.naming.resources.Resource;
-import org.apache.catalina.util.XMLWriter;
-import org.apache.catalina.util.DOMWriter;
-import org.apache.catalina.util.RequestUtil;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 /**
@@ -259,7 +254,7 @@ public class WebdavServlet
         throws ServletException {
         DocumentBuilder documentBuilder = null;
         try {
-            documentBuilder = 
+            documentBuilder =
                 DocumentBuilderFactory.newInstance().newDocumentBuilder();
         } catch(ParserConfigurationException e) {
             throw new ServletException
@@ -508,7 +503,7 @@ public class WebdavServlet
                             resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
                             resp.setContentType("text/xml; charset=UTF-8");
                             // Create multistatus object
-                            XMLWriter generatedXML = 
+                            XMLWriter generatedXML =
                                 new XMLWriter(resp.getWriter());
                             generatedXML.writeXMLHeader();
                             generatedXML.writeElement
@@ -571,10 +566,10 @@ public class WebdavServlet
                 if ((object instanceof DirContext) && (depth > 0)) {
 
                     try {
-                        NamingEnumeration enum = resources.list(currentPath);
-                        while (enum.hasMoreElements()) {
+                        NamingEnumeration enums = resources.list(currentPath);
+                        while (enums.hasMoreElements()) {
                             NameClassPair ncPair =
-                                (NameClassPair) enum.nextElement();
+                                (NameClassPair) enums.nextElement();
                             String newPath = currentPath;
                             if (!(newPath.endsWith("/")))
                                 newPath += "/";
@@ -592,7 +587,7 @@ public class WebdavServlet
                     // collection
                     String lockPath = currentPath;
                     if (lockPath.endsWith("/"))
-                        lockPath = 
+                        lockPath =
                             lockPath.substring(0, lockPath.length() - 1);
                     Vector currentLockNullResources =
                         (Vector) lockNullResources.get(lockPath);
@@ -742,8 +737,6 @@ public class WebdavServlet
     /**
      * Process a POST request for the specified resource.
      *
-     * @param request The servlet request we are processing
-     * @param response The servlet response we are creating
      *
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
@@ -1512,7 +1505,7 @@ public class WebdavServlet
                 if (firstSeparator < 0) {
                     destinationPath = "/";
                 } else {
-                    destinationPath = 
+                    destinationPath =
                         destinationPath.substring(firstSeparator);
                 }
             }
@@ -1534,7 +1527,7 @@ public class WebdavServlet
             }
         }
 
-        destinationPath = 
+        destinationPath =
             RequestUtil.URLDecode(normalize(destinationPath), "UTF8");
 
         if (debug > 0)
@@ -1667,9 +1660,9 @@ public class WebdavServlet
             }
 
             try {
-                NamingEnumeration enum = resources.list(source);
-                while (enum.hasMoreElements()) {
-                    NameClassPair ncPair = (NameClassPair) enum.nextElement();
+                NamingEnumeration enums = resources.list(source);
+                while (enums.hasMoreElements()) {
+                    NameClassPair ncPair = (NameClassPair) enums.nextElement();
                     String childDest = dest;
                     if (!childDest.equals("/"))
                         childDest += "/";
@@ -1844,17 +1837,17 @@ public class WebdavServlet
         if (lockTokenHeader == null)
             lockTokenHeader = "";
 
-        Enumeration enum = null;
+        Enumeration enums = null;
         try {
-            enum = resources.list(path);
+            enums = resources.list(path);
         } catch (NamingException e) {
             errorList.put(path, new Integer
                 (WebdavStatus.SC_INTERNAL_SERVER_ERROR));
             return;
         }
 
-        while (enum.hasMoreElements()) {
-            NameClassPair ncPair = (NameClassPair) enum.nextElement();
+        while (enums.hasMoreElements()) {
+            NameClassPair ncPair = (NameClassPair) enums.nextElement();
             String childName = path;
             if (!childName.equals("/"))
                 childName += "/";
@@ -2239,9 +2232,7 @@ public class WebdavServlet
 
     /**
      * Propfind helper method. Dispays the properties of a lock-null resource.
-     *
-     * @param resources Resources object associated with this context
-     * @param generatedXML XML response to the Propfind request
+     ** @param generatedXML XML response to the Propfind request
      * @param path Path of the current resource
      * @param type Propfind type
      * @param propertiesVector If the propfind type is find properties by
@@ -2574,11 +2565,6 @@ public class WebdavServlet
         // -------------------------------------------------------- Constructor
 
 
-        /**
-         * Constructor.
-         *
-         * @param pathname Path name of the file
-         */
         public LockInfo() {
 
         }

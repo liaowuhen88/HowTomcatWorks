@@ -65,48 +65,29 @@
 package org.apache.catalina.servlets;
 
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.util.StringTokenizer;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.apache.catalina.Globals;
+import org.apache.catalina.util.*;
+import org.apache.naming.resources.Resource;
+import org.apache.naming.resources.ResourceAttributes;
+
+import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.naming.NamingException;
-import javax.naming.InitialContext;
-import javax.naming.NamingEnumeration;
-import javax.naming.NameClassPair;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.Attributes;
-import org.apache.naming.resources.Resource;
-import org.apache.naming.resources.ResourceAttributes;
-import org.apache.catalina.Globals;
-import org.apache.catalina.util.FastHttpDateFormat;
-import org.apache.catalina.util.MD5Encoder;
-import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
-import org.apache.catalina.util.URLEncoder;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 /**
@@ -537,8 +518,6 @@ public class DefaultServlet
     /**
      * Process a POST request for the specified resource.
      *
-     * @param request The servlet request we are processing
-     * @param response The servlet response we are creating
      *
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
@@ -687,8 +666,8 @@ public class DefaultServlet
     /**
      * Process a POST request for the specified resource.
      *
-     * @param request The servlet request we are processing
-     * @param response The servlet response we are creating
+     * @param req The servlet request we are processing
+     * @param resp The servlet response we are creating
      *
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
@@ -766,7 +745,6 @@ public class DefaultServlet
      * Get the ETag associated with a file.
      *
      * @param resourceInfo File object
-     * @param strong True if we want a strong ETag, in which case a checksum
      * of the file has to be calculated
      */
     protected String getETag(ResourceInfo resourceInfo) {
@@ -1450,12 +1428,12 @@ public class DefaultServlet
 
             // Render the directory entries within this directory
             DirContext directory = resourceInfo.directory;
-            NamingEnumeration enum =
+            NamingEnumeration enums =
                 resourceInfo.resources.list(resourceInfo.path);
             boolean shade = false;
-            while (enum.hasMoreElements()) {
+            while (enums.hasMoreElements()) {
 
-                NameClassPair ncPair = (NameClassPair) enum.nextElement();
+                NameClassPair ncPair = (NameClassPair) enums.nextElement();
                 String resourceName = ncPair.getName();
                 ResourceInfo childResourceInfo =
                     new ResourceInfo(resourceName, directory);
@@ -1717,7 +1695,7 @@ public class DefaultServlet
      * output stream, and ensure that both streams are closed before returning
      * (even in the face of an exception).
      *
-     * @param istream The input stream to read from
+     * @param resourceInfo The input stream to read from
      * @param ostream The output stream to write to
      *
      * @exception IOException if an input/output error occurs
@@ -1754,7 +1732,7 @@ public class DefaultServlet
      * output stream, and ensure that both streams are closed before returning
      * (even in the face of an exception).
      *
-     * @param istream The input stream to read from
+     * @param resourceInfo The input stream to read from
      * @param writer The writer to write to
      *
      * @exception IOException if an input/output error occurs
@@ -2204,7 +2182,7 @@ public class DefaultServlet
         /**
          * Constructor.
          *
-         * @param pathname Path name of the file
+         * @param resources Path name of the file
          */
         public ResourceInfo(String path, DirContext resources) {
             set(path, resources);
